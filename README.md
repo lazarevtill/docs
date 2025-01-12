@@ -14,6 +14,14 @@ A modern, feature-rich documentation site generator built with Next.js and MDX. 
 - ✨ **Syntax Highlighting** - Beautiful code formatting
 - 📚 **Auto-generated TOC** - Automatic table of contents for each page
 
+---
+
+Screenshot of app:
+
+![screenshot](./img/Screenshot-1.png)
+
+---
+
 ## Getting Started
 
 ### Prerequisites
