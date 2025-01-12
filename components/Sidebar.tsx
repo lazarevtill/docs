@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Home, Search, ChevronRight, Menu } from 'lucide-react'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -28,7 +28,7 @@ function TreeItem({ name, node, basePath, level, currentPath }: TreeItemProps) {
   const isDirectory = node !== null
   
   return (
-    <li className="relative" role="treeitem">
+    <li className="relative" role="treeitem" aria-selected={isActive} aria-expanded={isDirectory && isOpen}>
       <div
         className={cn(
           "flex items-center py-1",
@@ -71,7 +71,6 @@ function TreeItem({ name, node, basePath, level, currentPath }: TreeItemProps) {
         <ul className="mt-1 border-l border-muted pl-4">
           {Object.entries(node)
             .sort(([aKey, aValue], [bKey, bValue]) => {
-              // Sort directories before files
               const aIsDir = aValue !== null
               const bIsDir = bValue !== null
               if (aIsDir === bIsDir) {
@@ -128,7 +127,7 @@ export default function Sidebar() {
     }
 
     window.addEventListener('resize', handleResize)
-    handleResize() // Call it initially
+    handleResize()
 
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -136,23 +135,23 @@ export default function Sidebar() {
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (isMobileMenuOpen && window.innerWidth < 1024) {
-        const sidebar = document.getElementById('mobile-sidebar');
+        const sidebar = document.getElementById('mobile-sidebar')
         if (sidebar && !sidebar.contains(event.target as Node)) {
-          setIsMobileMenuOpen(false);
+          setIsMobileMenuOpen(false)
         }
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('mousedown', handleOutsideClick)
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, [isMobileMenuOpen]);
+      document.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [isMobileMenuOpen])
 
-  function filterTree(tree: TreeNode, query: string): TreeNode {
-    if (!query) return tree
+  const filterTree = useCallback((treeData: TreeNode, query: string): TreeNode => {
+    if (!query) return treeData
     const filtered: TreeNode = {}
-    Object.entries(tree).forEach(([key, value]) => {
+    Object.entries(treeData).forEach(([key, value]) => {
       const displayName = key.split(/[\\/]/).pop() || key
       if (displayName.toLowerCase().includes(query.toLowerCase())) {
         filtered[key] = value
@@ -164,9 +163,12 @@ export default function Sidebar() {
       }
     })
     return filtered
-  }
+  }, [])
 
-  const filteredTree = useMemo(() => filterTree(tree, searchQuery), [tree, searchQuery])
+  const filteredTree = useMemo(() => 
+    filterTree(tree, searchQuery), 
+    [tree, searchQuery, filterTree]
+  )
 
   return (
     <>
@@ -251,4 +253,3 @@ export default function Sidebar() {
     </>
   )
 }
-

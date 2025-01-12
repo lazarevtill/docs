@@ -3,6 +3,19 @@ import path from 'path'
 import { promises as fs } from 'fs'
 import matter from 'gray-matter'
 
+type DocContent = {
+  slug: string
+  frontmatter: Record<string, unknown>
+  content: string
+  isDirectory: boolean
+  error?: string
+}
+
+// Define a type for the tree structure
+type TreeNode = {
+  [key: string]: TreeNode | null
+}
+
 const docsDirectory = path.join(process.cwd(), 'docs')
 
 export async function GET(request: NextRequest) {
@@ -17,8 +30,8 @@ export async function GET(request: NextRequest) {
       const tree = await getDocsTree()
       return NextResponse.json(tree)
     }
-  } catch (error) {
-    console.error('API route error:', error)
+  } catch (err) {
+    console.error('API route error:', err)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
@@ -26,8 +39,8 @@ export async function GET(request: NextRequest) {
 async function getAllDocSlugs() {
   try {
     return await getAllFilesAndDirs(docsDirectory)
-  } catch (error) {
-    console.error('Error reading docs directory:', error)
+  } catch {
+    console.error('Error reading docs directory')
     return []
   }
 }
@@ -44,7 +57,6 @@ async function getDocBySlug(slug: string) {
 
     const fullPath = path.join(docsDirectory, ...pathParts)
 
-    // Check if the path exists with or without the .md extension
     const possiblePaths = [
       fullPath,
       `${fullPath}.md`,
@@ -61,13 +73,13 @@ async function getDocBySlug(slug: string) {
         stats = await fs.stat(p)
         existingPath = p
         break
-      } catch (error) {
+      } catch {
         // Continue to the next possible path
       }
     }
 
     if (!stats || !existingPath) {
-      console.error(`Error reading file stats for ${fullPath}:`, { code: 'ENOENT', path: fullPath })
+      console.error(`File not found: ${fullPath}`)
       return await findCloseMatch(pathParts)
     }
 
@@ -77,8 +89,8 @@ async function getDocBySlug(slug: string) {
 
     return await handleFile(existingPath, realSlug, pathParts)
 
-  } catch (error) {
-    console.error(`Error reading doc file for slug ${slug}:`, error)
+  } catch {
+    console.error(`Error reading doc file for slug ${slug}`)
     return createNotFoundResponse(slug)
   }
 }
@@ -107,8 +119,8 @@ async function handleDirectory(fullPath: string, realSlug: string, pathParts: st
       subDirs,
       mdFiles
     }
-  } catch (error) {
-    console.error(`Error handling directory ${fullPath}:`, error)
+  } catch {
+    console.error(`Error handling directory ${fullPath}`)
     return createNotFoundResponse(realSlug)
   }
 }
@@ -127,14 +139,13 @@ async function handleFile(fullPath: string, realSlug: string, pathParts: string[
       content,
       isDirectory: false
     }
-
-  } catch (error) {
-    console.error(`Error handling file ${fullPath}:`, error)
+  } catch {
+    console.error(`Error handling file ${fullPath}`)
     return createNotFoundResponse(realSlug)
   }
 }
 
-function createNotFoundResponse(slug: string) {
+function createNotFoundResponse(slug: string): DocContent {
   return {
     slug,
     frontmatter: { title: 'Not Found' },
@@ -161,38 +172,38 @@ async function getAllFilesAndDirs(dir: string, baseDir: string = ''): Promise<st
         } else if (/\.(md|mdx)$/i.test(item)) {
           list.push(relativePath.replace(/\.mdx?$/i, ''))
         }
-      } catch (statError) {
-        console.error(`Error reading stats for ${fullPath}:`, statError)
+      } catch {
+        console.error(`Error reading stats for ${fullPath}`)
       }
     }
 
     return list
-  } catch (error) {
-    console.error('Error reading directory:', error)
+  } catch {
+    console.error('Error reading directory')
     return []
   }
 }
 
-async function getDocsTree() {
+async function getDocsTree(): Promise<TreeNode> {
   const slugs = await getAllDocSlugs()
-  const tree = {}
+  const tree: TreeNode = {}
 
   slugs.forEach(slug => {
     const parts = slug.split('/')
-    let current = tree
+    let current: TreeNode = tree
 
     parts.forEach((part, index) => {
       if (!current[part]) {
         current[part] = index === parts.length - 1 ? null : {}
       }
-      current = current[part]
+      current = current[part] as TreeNode
     })
   })
 
   return tree
 }
 
-async function findCloseMatch(pathParts: string[]): Promise<any> {
+async function findCloseMatch(pathParts: string[]): Promise<DocContent> {
   const dirPath = path.join(docsDirectory, ...pathParts.slice(0, -1))
   const fileName = pathParts[pathParts.length - 1]
 
@@ -217,10 +228,9 @@ async function findCloseMatch(pathParts: string[]): Promise<any> {
         isDirectory: false
       }
     }
-  } catch (error) {
-    console.error(`Error finding close match for ${fileName}:`, error)
+  } catch {
+    console.error(`Error finding close match for ${fileName}`)
   }
 
   return createNotFoundResponse(pathParts.join('/'))
 }
-

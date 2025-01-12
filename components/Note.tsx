@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface NoteProps {
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function Note({ children }: NoteProps) {
@@ -16,4 +16,3 @@ export function Note({ children }: NoteProps) {
     </div>
   )
 }
-

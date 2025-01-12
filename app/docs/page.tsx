@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { getDocsTree } from '@/lib/docs'
 
-function renderTree(tree: any, basePath: string = '') {
+type TreeNode = {
+  [key: string]: TreeNode | null
+}
+
+function renderTree(tree: TreeNode, basePath: string = '') {
   return (
     <ul className="pl-4">
       {Object.entries(tree).map(([key, value]) => (
@@ -22,8 +26,8 @@ function renderTree(tree: any, basePath: string = '') {
   )
 }
 
-export default function DocsIndexPage() {
-  const tree = getDocsTree()
+export default async function DocsIndexPage() {
+  const tree = await getDocsTree()
 
   return (
     <div>
@@ -34,9 +38,8 @@ export default function DocsIndexPage() {
           {renderTree(tree)}
         </>
       ) : (
-        <p className="mb-4">No documentation found. Please add some .md or .mdx files to the 'docs' directory.</p>
+        <p className="mb-4">No documentation found. Please add some .md or .mdx files to the &apos;docs&apos; directory.</p>
       )}
     </div>
   )
 }
-

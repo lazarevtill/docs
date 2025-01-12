@@ -4,6 +4,11 @@ import { promises as fs } from 'fs'
 
 const docsDirectory = path.join(process.cwd(), 'docs')
 
+// Define a type for the tree structure
+type TreeNode = {
+  [key: string]: TreeNode | null
+}
+
 export async function GET() {
   try {
     const tree = await getDocsTree()
@@ -14,14 +19,14 @@ export async function GET() {
   }
 }
 
-async function getDocsTree() {
+async function getDocsTree(): Promise<TreeNode> {
   const files = await getAllFiles(docsDirectory)
-  const tree = {}
+  const tree: TreeNode = {}
 
   for (const file of files) {
     const relativePath = path.relative(docsDirectory, file)
     const parts = relativePath.split(path.sep)
-    let current = tree
+    let current: TreeNode = tree
 
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
@@ -29,7 +34,7 @@ async function getDocsTree() {
       const isFile = isLast && /\.(md|mdx)$/i.test(part)
       
       // Clean up the name and handle "About" files
-      let key = isFile ? part.replace(/\.(md|mdx)$/i, '') : part
+      const key = isFile ? part.replace(/\.(md|mdx)$/i, '') : part
       
       // Create nested structure
       if (!current[key]) {
@@ -37,7 +42,7 @@ async function getDocsTree() {
       }
       
       if (!isLast) {
-        current = current[key]
+        current = current[key] as TreeNode
       }
     }
   }
