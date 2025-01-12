@@ -4,7 +4,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import matter from 'gray-matter'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { Note } from '@/components/Note'
-import { ScrollArea } from '@/components/ui/scroll-area'
+// import { ScrollArea } from '@/components/ui/scroll-area'
 import { FolderIcon, FileIcon } from 'lucide-react'
 import Link from 'next/link'
 
@@ -204,35 +204,36 @@ export default async function DocPage({ params }: { params: { slug: string[] } }
   const { frontmatter, content, structure, error, isDirectory } = await getDocContent(params.slug)
 
   return (
-    <ScrollArea className="h-[calc(100vh-1px)]">
-      <div className="container max-w-4xl py-6 px-4">
+    <div className="min-h-screen w-full scroll-area-elegant">
+      <div className="container max-w-4xl mx-auto py-4 px-6 lg:py-8 lg:px-8">
         <Breadcrumbs path={params.slug.join('/')} />
-        <article className="mx-auto">
-          <h1 className="text-4xl font-bold mb-6">{frontmatter.title}</h1>
-          {!error ? (
-            isDirectory ? (
-              <>
-                <p className="text-muted-foreground mb-4">{content}</p>
-                <FolderStructure structure={structure} params={params} />
-              </>
+        <article className="mx-auto w-full">
+          <div className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none break-words">
+            {!error ? (
+              isDirectory ? (
+                <>
+                  <p className="text-muted-foreground mb-4">{content}</p>
+                  <FolderStructure structure={structure} params={params} />
+                </>
+              ) : (
+                <MDXRemote 
+                  source={content} 
+                  components={components}
+                  options={{
+                    parseFrontmatter: true,
+                    mdxOptions: {
+                      format: 'mdx'
+                    }
+                  }}
+                />
+              )
             ) : (
-              <MDXRemote 
-                source={content} 
-                components={components}
-                options={{
-                  parseFrontmatter: true,
-                  mdxOptions: {
-                    format: 'mdx'
-                  }
-                }}
-              />
-            )
-          ) : (
-            <p className="text-muted-foreground mb-4">{content}</p>
-          )}
+              <p className="text-muted-foreground mb-4">{content}</p>
+            )}
+          </div>
         </article>
       </div>
-    </ScrollArea>
+    </div>
   )
 }
 

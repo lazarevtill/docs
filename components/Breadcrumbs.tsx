@@ -12,8 +12,11 @@ export default function Breadcrumbs({ path }: BreadcrumbsProps) {
   })
 
   return (
-    <nav aria-label="Breadcrumb" className="text-sm mb-4">
-      <ol className="list-none p-0 inline-flex">
+    <nav 
+      aria-label="Breadcrumb" 
+      className="text-sm mb-4 overflow-x-auto whitespace-nowrap -mx-2 px-2 py-1"
+    >
+      <ol className="flex items-center space-x-2">
         <li className="flex items-center">
           <Link href="/" className="text-blue-500 hover:underline">
             Docs
@@ -21,9 +24,11 @@ export default function Breadcrumbs({ path }: BreadcrumbsProps) {
         </li>
         {breadcrumbs.map((crumb, index) => (
           <li key={crumb.href} className="flex items-center">
-            <span className="mx-2" aria-hidden="true">/</span>
+            <span className="mx-2 text-gray-500">/</span>
             {index === breadcrumbs.length - 1 ? (
-              <span className="text-gray-500" aria-current="page">{decodeURIComponent(crumb.label).replace(/-/g, ' ')}</span>
+              <span className="text-gray-500" aria-current="page">
+                {decodeURIComponent(crumb.label).replace(/-/g, ' ')}
+              </span>
             ) : (
               <Link href={crumb.href} className="text-blue-500 hover:underline">
                 {decodeURIComponent(crumb.label).replace(/-/g, ' ')}

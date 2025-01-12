@@ -1,4 +1,5 @@
 import './globals.css'
+import './output.css'
 import { Inter } from 'next/font/google'
 import Sidebar from '../components/Sidebar'
 
@@ -11,20 +12,16 @@ export const metadata = {
 
 export default function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode
-  params?: { slug?: string[] }
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full antialiased`}>
-        <div className="flex h-full">
+      <body className={`${inter.className} h-full antialiased overflow-hidden`}>
+        <div className="flex h-full flex-col lg:flex-row">
           <Sidebar />
-          <div className="flex-1 overflow-hidden border-l">
-            <div className="p-6">
-              {children}
-            </div>
+          <div className="flex-1 overflow-auto scroll-area-elegant">
+            <main className="relative">{children}</main>
           </div>
         </div>
       </body>
