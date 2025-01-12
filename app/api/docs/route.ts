@@ -234,4 +234,3 @@ async function findCloseMatch(pathParts: string[]): Promise<DocContent> {
 
   return createNotFoundResponse(pathParts.join('/'))
 }
-export const runtime = 'edge';
