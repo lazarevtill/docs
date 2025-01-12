@@ -25,7 +25,7 @@ A modern, feature-rich documentation site generator built with Next.js and MDX. 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/lazarevtill/docs.git
+git clone https://github.com/Lazarev-Cloud/docs.git
 cd docs
 ```
 
